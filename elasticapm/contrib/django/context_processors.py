@@ -35,12 +35,14 @@ from elasticapm.traces import execution_context
 def rum_tracing(request):
     transaction = execution_context.get_transaction()
     if transaction and transaction.trace_parent:
+        transaction_name = request.resolver_match.route if hasattr(request.resolver_match, "route") else None
         return {
             "apm": {
                 "trace_id": transaction.trace_parent.trace_id,
                 # only put the callable into the context to ensure that we only change the span_id if the value
                 # is rendered
                 "span_id": transaction.ensure_parent_id,
+                "transaction_name": transaction_name,
                 "is_sampled": transaction.is_sampled,
                 "is_sampled_js": "true" if transaction.is_sampled else "false",
             }
